@@ -18,9 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Served at https://siberianvito.github.io/saving-solutions-group/ — needs the repo base path
-      PAGES_BASE_PATH: /saving-solutions-group
-      SITE_URL: https://siberianvito.github.io/saving-solutions-group
+      # Custom domain (savingsolutionsinsurance.com) serves from the root — no base path
+      SITE_URL: https://savingsolutionsinsurance.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

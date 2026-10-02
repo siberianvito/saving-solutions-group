@@ -6,7 +6,7 @@
 export const SITE = {
   name: "Saving Solutions Group",
   short: "Saving Solutions",
-  url: "https://savingsolutionsgroup.com",
+  url: "https://savingsolutionsinsurance.com",
   tagline: "Technology when you want it. A human when you need one.",
   promise: "Digital speed. Human advice.",
   phone: "(786) 510-5572",
