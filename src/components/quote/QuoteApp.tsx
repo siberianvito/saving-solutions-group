@@ -6,7 +6,7 @@ import Icon from "@/components/Icon";
 import { asset } from "@/lib/asset";
 import { SITE } from "@/lib/data";
 import PropertyLookup from "@/components/PropertyLookup";
-import { lookupFolio } from "@/lib/property";
+import { lookupProperty, type County } from "@/lib/property";
 import { COVERAGES, INDUSTRIES, LIFE_BASICS, PATHS, QUESTIONS, WATER_QS, type Path, type Q } from "@/lib/questions";
 import { newRef, submitIntake, type IntakeRecord } from "@/lib/intake";
 
@@ -145,10 +145,11 @@ export default function QuoteApp() {
       setS(next);
     } else if (params.get("address")) {
       setS({ ...blank(), address: params.get("address") ?? "" });
-      const folio = params.get("folio");
-      if (folio) {
-        lookupFolio(folio)
-          .then((rec) => rec && setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio } })))
+      const county = params.get("county") as County | null;
+      const pid = params.get("pid");
+      if (county && pid) {
+        lookupProperty(county, pid)
+          .then((rec) => rec && setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio: `${rec.county}:${rec.id}` } })))
           .catch(() => {});
       }
     } else if (stored && !stored.submitted && (stored.step > 0 || stored.path)) {
@@ -402,7 +403,7 @@ export default function QuoteApp() {
                     initial={s.address}
                     compact
                     onAddressChange={(a) => setS((p) => ({ ...p, address: a, property: p.property.status === "manual" ? p.property : { status: "none" } }))}
-                    onVerified={(rec) => setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio: rec.folio } }))}
+                    onVerified={(rec) => setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio: `${rec.county}:${rec.id}` } }))}
                     onManual={() => set("property", { status: "manual" })}
                   />
                 )}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
-import { lookupFolio, suggestAddresses, type AddressSuggestion, type PropertyRecord } from "@/lib/property";
+import { COUNTY_LABEL, lookupProperty, suggestAddresses, type AddressSuggestion, type PropertyRecord } from "@/lib/property";
 
 type Status = "idle" | "loading" | "found" | "verified" | "none" | "error";
 
@@ -37,7 +37,7 @@ export default function PropertyLookup({
   // Debounced live suggestions
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 5 || !/^\d/.test(term) || status === "found" || status === "verified") return;
+    if (term.length < 5 || !/^\d/.test(term) || status !== "idle") return;
     const id = ++seq.current;
     const t = window.setTimeout(async () => {
       setSearching(true);
@@ -63,18 +63,20 @@ export default function PropertyLookup({
     return () => document.removeEventListener("mousedown", off);
   }, []);
 
-  const STEPS = ["Matching parcel record", "Reading building characteristics", "Checking FEMA flood zone"];
+  const STEPS = ["Matching county parcel record", "Reading building characteristics", "Checking FEMA flood zone"];
 
   const pick = async (s: AddressSuggestion) => {
+    seq.current++; // invalidate any search still in flight
+    setSearching(false);
     setOpen(false);
-    const label = `${s.address}, ${s.city}, FL ${s.zip}`;
+    const label = `${s.address}, ${s.place}`;
     setQ(label);
     onAddressChange?.(label);
     setStatus("loading");
     setStep(0);
     const ticks = [window.setTimeout(() => setStep(1), 350), window.setTimeout(() => setStep(2), 800)];
     try {
-      const r = await lookupFolio(s.folio);
+      const r = await lookupProperty(s.county, s.id);
       ticks.forEach(clearTimeout);
       setStep(3);
       if (!r) { setStatus("none"); return; }
@@ -119,7 +121,7 @@ export default function PropertyLookup({
               if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
               if (e.key === "Escape") setOpen(false);
             }}
-            placeholder="Start typing a Miami-Dade address"
+            placeholder="Start typing a Miami-Dade, Broward or Palm Beach address"
             className="field !pl-11 !pr-10"
             role="combobox"
             aria-expanded={open}
@@ -129,11 +131,13 @@ export default function PropertyLookup({
           {searching && <span className="absolute right-4 top-1/2 h-2 w-2 -translate-y-1/2 animate-pulse-dot rounded-full bg-gold" />}
           {open && (
             <ul id="ssg-addr-list" role="listbox" className="absolute inset-x-0 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-2xl border border-gold/25 bg-[#07101e]/97 p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl" data-lenis-prevent>
-              {sugs.length === 0 ? (
-                <li className="px-4 py-3 text-sm text-mist">No Miami-Dade match yet. Keep typing, or check the street name.</li>
+              {searching ? (
+                <li className="flex items-center gap-3 px-4 py-3 text-sm text-mist"><span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-gold" /> Searching Miami-Dade, Broward &amp; Palm Beach records…</li>
+              ) : sugs.length === 0 ? (
+                <li className="px-4 py-3 text-sm text-mist">No match yet in Miami-Dade, Broward or Palm Beach records. Keep typing, or check the street name.</li>
               ) : (
                 sugs.map((s, i) => (
-                  <li key={s.folio} role="option" aria-selected={i === active}>
+                  <li key={`${s.county}:${s.id}`} role="option" aria-selected={i === active}>
                     <button
                       type="button"
                       onMouseEnter={() => setActive(i)}
@@ -142,7 +146,7 @@ export default function PropertyLookup({
                     >
                       <span>
                         <span className="block text-sm text-ivory">{s.address}</span>
-                        <span className="block text-xs text-mist">{s.city === "Unincorporated County" ? "Miami-Dade" : s.city}, FL {s.zip}</span>
+                        <span className="block text-xs text-mist">{s.place} <span className="text-gold/70">· {COUNTY_LABEL[s.county]} County</span></span>
                       </span>
                       <span className="shrink-0 rounded-full border border-gold/25 px-2.5 py-1 text-[0.65rem] text-gold-light">{s.type}</span>
                     </button>
@@ -160,7 +164,7 @@ export default function PropertyLookup({
           <div className="grid h-[300px] place-items-center rounded-2xl border border-dashed border-gold/15 text-center">
             <div>
               <Icon name="search" className="mx-auto h-10 w-10 text-gold/50" stroke={1} />
-              <p className="mt-4 max-w-xs text-sm text-mist">Type a Miami-Dade address and pick it from the list. We&apos;ll pull the real public record in seconds.</p>
+              <p className="mt-4 max-w-xs text-sm text-mist">Type a Miami-Dade, Broward or Palm Beach address and pick it from the list. We&apos;ll pull the real public record in seconds.</p>
             </div>
           </div>
         )}
@@ -182,7 +186,7 @@ export default function PropertyLookup({
           <div style={{ animation: "fadeUp .6s both" }}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm text-mist">{status === "found" ? "Is this your property?" : "Verified"}</p>
-              <p className="hud !normal-case !tracking-normal">Folio {rec.folio.replace(/^(\d{2})(\d{2})(\d{3})(\d{3})(\d{3})$/, "$1-$2$3-$4-$5")}</p>
+              <p className="hud !normal-case !tracking-normal">{COUNTY_LABEL[rec.county]} County · Parcel {rec.id}</p>
             </div>
             <p className="mt-1 font-display text-2xl text-ivory">{rec.address}</p>
             <dl className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3">
@@ -201,7 +205,7 @@ export default function PropertyLookup({
             ) : (
               <p className="mt-4 flex items-center gap-2 text-sm text-gold-light"><Icon name="check" className="h-4 w-4" /> Verified. {rec.fields.length} answers you won&apos;t have to type.</p>
             )}
-            <p className="hud mt-4 !normal-case !tracking-normal">Source: Miami-Dade Property Appraiser public records &amp; FEMA flood maps. Your advisor confirms everything before quoting.</p>
+            <p className="hud mt-4 !normal-case !tracking-normal">Source: {COUNTY_LABEL[rec.county]} County public property records &amp; FEMA flood maps. Your advisor confirms everything before quoting.</p>
           </div>
         )}
 
@@ -209,7 +213,7 @@ export default function PropertyLookup({
           <div className="rounded-2xl border border-gold/20 bg-gold/[0.05] p-5" style={{ animation: "fadeUp .5s both" }}>
             <p className="text-sm text-ivory">
               {status === "none"
-                ? "We couldn't find that address in Miami-Dade records. Outside Miami-Dade? No problem. Your advisor will confirm the details with you."
+                ? "We couldn't find that address in Miami-Dade, Broward or Palm Beach records. Outside South Florida? No problem. Your advisor will confirm the details with you."
                 : "The county records service didn't respond just now. Try again in a moment, or continue and your advisor will confirm the details."}
             </p>
             <div className="mt-3 flex gap-2">

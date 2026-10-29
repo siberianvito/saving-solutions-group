@@ -93,7 +93,7 @@ function PropertyDemo() {
     <div className="glass-deep gold-frame rounded-[28px] p-6 md:p-8">
       <div className="flex items-center justify-between">
         <p className="eyebrow">Try it · Property intelligence</p>
-        <span className="hud flex items-center gap-1.5"><span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-gold" /> Live · Miami-Dade</span>
+        <span className="hud flex shrink-0 items-center gap-1.5"><span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-gold" /> Live · Tri-County</span>
       </div>
       <div className="mt-5">
         <PropertyLookup onVerified={setVerified} />
@@ -101,7 +101,7 @@ function PropertyDemo() {
       {verified && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gold/10 px-4 py-3 ring-1 ring-gold/30" style={{ animation: "fadeUp .5s both" }}>
           <span className="text-sm text-gold-light">Want a quote on this {verified.type.toLowerCase()}?</span>
-          <Link href={`/quote?address=${encodeURIComponent(verified.address)}&folio=${verified.folio}`} className="text-sm font-medium text-ivory underline decoration-gold underline-offset-4">Continue my quote →</Link>
+          <Link href={`/quote?address=${encodeURIComponent(verified.address)}&county=${verified.county}&pid=${encodeURIComponent(verified.id)}`} className="text-sm font-medium text-ivory underline decoration-gold underline-offset-4">Continue my quote →</Link>
         </div>
       )}
     </div>
