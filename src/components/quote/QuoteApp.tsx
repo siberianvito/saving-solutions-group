@@ -496,7 +496,7 @@ export default function QuoteApp() {
               </dl>
               <label className="mt-6 flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-mist">
                 <input type="checkbox" checked={s.consent} onChange={(e) => set("consent", e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#c9a24a]" />
-                <span>I agree that Saving Solutions Group may contact me by phone, text message, and email about my request, including reminders about incomplete applications. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</span>
+                <span>I agree that Saving Solutions Group may contact me by phone, text message, and email about my request, including reminders about incomplete applications. Message frequency varies; message and data rates may apply. Reply STOP to opt out or HELP for help. Consent is not a condition of purchase. See our <Link href="/privacy-policy" className="text-gold-light underline">Privacy Policy</Link> and <Link href="/terms-of-service" className="text-gold-light underline">Terms of Service</Link>.</span>
               </label>
             </>
           )}

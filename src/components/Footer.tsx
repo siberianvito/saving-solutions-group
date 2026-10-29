@@ -69,7 +69,13 @@ export default function Footer() {
 
         <div className="gold-rule mt-16" />
         <div className="mt-6 flex flex-col justify-between gap-4 text-[0.7rem] leading-relaxed text-mist/60 md:flex-row">
-          <p>© {new Date().getFullYear()} Saving Solutions Group. All rights reserved. {SITE.license}</p>
+          <div className="space-y-2">
+            <p>© {new Date().getFullYear()} Saving Solutions Group. All rights reserved. {SITE.license}</p>
+            <p className="flex gap-4">
+              <Link href="/privacy-policy" className="text-mist hover:text-gold-light">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="text-mist hover:text-gold-light">Terms of Service</Link>
+            </p>
+          </div>
           <p className="max-w-2xl md:text-right">
             Coverage is subject to underwriting, policy terms, conditions and exclusions, and carrier availability. Property data shown during quoting is for verification and may be incomplete. Water savings figures reflect past client results and are not a guarantee of future savings.
           </p>

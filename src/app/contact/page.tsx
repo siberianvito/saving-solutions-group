@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import GHLForm from "@/components/GHLForm";
@@ -37,6 +38,10 @@ export default function Contact() {
           <p className="font-display text-3xl">Send a message</p>
           <div className="mt-8">
             <GHLForm idSuffix="contact" title="Contact" />
+            <p className="mt-4 text-center text-xs text-mist/70">
+              By submitting you agree to our <Link href="/privacy-policy" className="text-gold-light underline">Privacy Policy</Link> and{" "}
+              <Link href="/terms-of-service" className="text-gold-light underline">Terms of Service</Link>. Reply STOP to opt out of texts.
+            </p>
           </div>
         </div>
       </section>
