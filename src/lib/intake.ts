@@ -97,7 +97,44 @@ export function toLeadPayload(rec: IntakeRecord): Record<string, string> {
     submitted_at: rec.createdAt,
     ...Object.fromEntries(Object.entries(rec.source.utm).map(([k, v]) => [k, v])),
   };
+  flat.lead_summary = leadSummary(rec, flat);
   return flat;
+}
+
+/** Human-readable note for the advisor (map to a GHL "Add Note" action). */
+function leadSummary(rec: IntakeRecord, f: Record<string, string>): string {
+  const line = (label: string, v?: string) => (v && v.trim() ? `${label}: ${v.trim()}` : null);
+  const block = (title: string, rows: (string | null)[]) => {
+    const r = rows.filter(Boolean);
+    return r.length ? [`— ${title} —`, ...r].join("\n") : null;
+  };
+  const answers = Object.entries(rec.answers).flatMap(([group, qs]) =>
+    Object.entries(qs).filter(([, v]) => v).map(([k, v]) => `${group} · ${k.replace(/([A-Z])/g, " $1").toLowerCase()}: ${v}`)
+  );
+  return [
+    `🛡️ NEW WEBSITE QUOTE REQUEST · ${rec.ref}`,
+    block("Request", [
+      line("Insurance", f.insurance_type),
+      line("Coverage", f.coverages),
+      line("Best contact", f.preferred_contact),
+      line("Desired effective date", f.effective_date),
+    ]),
+    block("Contact", [line("Name", f.full_name), line("Phone", f.phone), line("Email", f.email)]),
+    rec.business ? block("Business", [line("Name", f.company_name), line("Industry", f.industry), line("Years in business", f.years_in_business)]) : null,
+    rec.property
+      ? block(`Property${rec.property.verified ? " (verified · public records)" : " (not verified)"}`, [
+          line("Address", f.property_address),
+          ...Object.entries(rec.property.data ?? {}).map(([k, v]) => line(k, v)),
+          line("Parcel", f.parcel_id),
+        ])
+      : null,
+    block("Current coverage", [line("Carrier", f.current_carrier), line("Annual premium", f.current_premium ? `$${f.current_premium.replace(/^\$/, "")}` : "")]),
+    answers.length ? block("Underwriting answers", answers) : null,
+    f.documents ? block("Documents mentioned", [f.documents]) : null,
+    block("Consent & source", [line("SMS consent", f.sms_consent), line("Source", f.source), line("Submitted", new Date(rec.createdAt).toLocaleString("en-US", { timeZone: "America/New_York" }) + " ET")]),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 /** POST any flat lead to the GHL webhook. */
