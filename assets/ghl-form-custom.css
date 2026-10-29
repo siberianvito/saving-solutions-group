@@ -1,0 +1,157 @@
+/* ─────────────────────────────────────────────────────────────
+   Saving Solutions Group — GoHighLevel form skin
+   Paste into: GHL → Sites → Forms → (this form) → Styles → Custom CSS
+   Form: gRFLaOj2R0Wmm1KEGLMv
+   Matches savingsolutionsinsurance.com: navy / hunter green / gold / ivory
+   ───────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=Montserrat:wght@500;600&display=swap");
+
+/* Transparent canvas so the website's luxury frame shows through */
+html, body, #app, .hl-app, .ghl-form-wrap, .form-builder, .hl_wrapper--inner,
+.hl_form-builder--main, .form-builder--wrap, .form-side, .fields-container,
+.form-builder--item, .form-field-wrapper, .form-field-container {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.form-builder--wrap, .form-builder--wrap-full {
+  font-family: "Inter", system-ui, sans-serif !important;
+  color: #f4efe4 !important;
+  padding: 0 !important;
+}
+
+/* Heading (if one is added in the builder) */
+.heading-element, .heading-element * {
+  font-family: "Cormorant Garamond", Georgia, serif !important;
+  font-weight: 400 !important;
+  color: #f4efe4 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Labels: gold small caps, like the site's eyebrows */
+#_builder-form .field-label, #_builder-form .label-alignment, #_builder-form .form-builder--item > label, #_builder-form .form-builder--item .field-label {
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.22em !important;
+  text-transform: uppercase !important;
+  color: #ecd393 !important;
+  margin-bottom: 8px !important;
+}
+#_builder-form .field-label span, #_builder-form .label-alignment span { color: #c9a24a !important; }
+
+/* Inputs: deep glass with a gold hairline */
+#_builder-form .form-builder--item input[type="text"][class="form-control"],
+#_builder-form .form-builder--item input[class="form-control"],
+#_builder-form .form-builder--item .form-control, #_builder-form .form-builder--item textarea, #_builder-form .form-builder--item select,
+#_builder-form .phone-input input, #_builder-form .email-input input, #_builder-form .iti input,
+.form-control, .phone-input input, .email-input input {
+  background: rgba(4, 7, 12, 0.55) !important;
+  border: 1px solid rgba(236, 211, 147, 0.22) !important;
+  border-radius: 14px !important;
+  color: #f4efe4 !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 15px !important;
+  height: 52px !important;
+  padding: 0 16px !important;
+  box-shadow: none !important;
+  transition: border-color .25s ease, box-shadow .25s ease, background .25s ease !important;
+}
+textarea.form-control { height: auto !important; min-height: 120px !important; padding: 14px 16px !important; }
+.form-control::placeholder, input::placeholder { color: rgba(169, 179, 194, 0.5) !important; }
+#_builder-form .form-builder--item .form-control:focus, #_builder-form .form-builder--item input:focus, #_builder-form .form-builder--item textarea:focus {
+  outline: none !important;
+  background: rgba(4, 7, 12, 0.8) !important;
+  border-color: rgba(236, 211, 147, 0.75) !important;
+  box-shadow: 0 0 0 4px rgba(201, 162, 74, 0.14) !important;
+}
+/* Phone country picker */
+.iti__selected-flag, .iti__flag-container { background: transparent !important; }
+.iti__country-list { background: #0b1d38 !important; color: #f4efe4 !important; border: 1px solid rgba(236,211,147,.2) !important; }
+.input-icon, .input-icon svg { color: #c9a24a !important; fill: #c9a24a !important; }
+
+/* Autofill keeps the dark look */
+input:-webkit-autofill, input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f4efe4 !important;
+  -webkit-box-shadow: 0 0 0 1000px #08101c inset !important;
+  caret-color: #f4efe4 !important;
+}
+
+/* Consent copy + checkboxes */
+#_builder-form .terms-and-conditions, #_builder-form .terms-text-container, #_builder-form .checkbox-container, #_builder-form .checkbox-container *,
+#_builder-form .checkbox-container label, #_builder-form .text-element, #_builder-form .text-element *,
+.terms-and-conditions, .checkbox-container, .checkbox-container * {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 400 !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  color: rgba(169, 179, 194, 0.85) !important;
+}
+#_builder-form .checkbox-container input[type="checkbox"], .checkbox-container input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 2px 10px 0 0 !important;
+  border: 1px solid rgba(236, 211, 147, 0.55) !important;
+  border-radius: 5px !important;
+  background: rgba(4, 7, 12, 0.55) center / 12px no-repeat !important;
+  cursor: pointer !important;
+  transition: background-color .2s ease, border-color .2s ease !important;
+}
+#_builder-form .checkbox-container input[type="checkbox"]:checked, .checkbox-container input[type="checkbox"]:checked {
+  background-color: #c9a24a !important;
+  border-color: #ecd393 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304070c' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") !important;
+}
+.terms-and-conditions a, .text-element a, .checkbox-container a, a {
+  color: #ecd393 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+}
+
+#_builder-form .checkbox-container strong, #_builder-form .checkbox-container b, #_builder-form .terms-and-conditions strong { color: #f4efe4 !important; font-weight: 600 !important; }
+
+/* Submit: the site's gold pill */
+#_builder-form .btn.button-element, #_builder-form .form-builder--btn-submit .btn, #_builder-form button[type="submit"],
+.btn.button-element, button[type="submit"] {
+  background: linear-gradient(110deg, #9a7430 0%, #e9cf8a 38%, #c9a24a 58%, #f3dc9a 78%, #9a7430 100%) !important;
+  background-size: 220% 100% !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #04070c !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  height: 56px !important;
+  width: 100% !important;
+  box-shadow: 0 14px 36px -14px rgba(201, 162, 74, 0.85) !important;
+  transition: background-position .9s ease, transform .25s ease, box-shadow .25s ease !important;
+}
+.btn.button-element:hover, button[type="submit"]:hover {
+  background-position: 100% 50% !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 18px 44px -14px rgba(201, 162, 74, 1) !important;
+}
+.btn.button-element *, .button-text { color: #04070c !important; font-weight: 600 !important; }
+
+/* Validation + success */
+.error, .text-danger, .field-error, .ghl-error { color: #f3a6a0 !important; font-size: 12px !important; }
+.thank-you-message, .ghl-thank-you, .form-builder--thanks, .thanks-message, .thank-you-message * {
+  font-family: "Cormorant Garamond", Georgia, serif !important;
+  color: #f4efe4 !important;
+  font-size: 26px !important;
+  text-align: center !important;
+}
+
+/* Loader in gold */
+.v-moon, .v-moon1, .v-moon2, .v-moon3 { background-color: #c9a24a !important; border-color: #c9a24a !important; }
+
+/* Breathing room between rows */
+.form-field-wrapper { padding-bottom: 6px !important; }

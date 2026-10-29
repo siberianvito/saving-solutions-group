@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
-import SimpleForm from "@/components/SimpleForm";
+import GHLForm from "@/components/GHLForm";
 import Icon from "@/components/Icon";
 import { SITE } from "@/lib/data";
 
@@ -36,18 +36,7 @@ export default function Contact() {
         <div className="glass-deep gold-frame rounded-[28px] p-7 md:p-9 lg:col-span-7">
           <p className="font-display text-3xl">Send a message</p>
           <div className="mt-8">
-            <SimpleForm
-              kind="contact"
-              cta="Send"
-              success="An advisor will reach out shortly."
-              fields={[
-                { id: "name", label: "Name", required: true },
-                { id: "phone", label: "Phone", type: "tel", required: true },
-                { id: "email", label: "Email", type: "email" },
-                { id: "topic", label: "Topic", type: "select", options: ["Business insurance", "Home & auto", "Private client", "Life & financial", "Water conservation", "Existing policy", "Other"] },
-                { id: "message", label: "How can we help?", type: "textarea" },
-              ]}
-            />
+            <GHLForm idSuffix="contact" title="Contact" />
           </div>
         </div>
       </section>
