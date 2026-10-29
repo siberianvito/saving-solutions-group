@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Icon from "./Icon";
+import { postLead, splitName } from "@/lib/intake";
+import { SITE } from "@/lib/data";
 
 type F = { id: string; label: string; type?: "text" | "email" | "tel" | "textarea" | "select"; options?: string[]; full?: boolean; required?: boolean };
 
@@ -9,18 +11,26 @@ type F = { id: string; label: string; type?: "text" | "email" | "tel" | "textare
 export default function SimpleForm({ fields, cta, kind, success }: { fields: F[]; cta: string; kind: string; success: string }) {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusy(true);
-    const data = Object.fromEntries(new FormData(e.currentTarget).entries());
-    const hook = process.env.NEXT_PUBLIC_INTAKE_WEBHOOK;
-    try {
-      if (hook) await fetch(hook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, ...data, createdAt: new Date().toISOString() }) });
-      else await new Promise((r) => setTimeout(r, 800));
-    } catch {}
+    const data = Object.fromEntries([...new FormData(e.currentTarget).entries()].map(([k, v]) => [k, String(v)]));
+    const r = await postLead({
+      ...splitName(data.name ?? ""),
+      full_name: data.name ?? "",
+      phone: data.phone ?? "",
+      email: data.email ?? "",
+      company_name: data.company ?? "",
+      source: `Website ${kind} form · savingsolutionsinsurance.com`,
+      form: kind,
+      details: Object.entries(data).map(([k, v]) => `${k}: ${v}`).join("\n"),
+      submitted_at: new Date().toISOString(),
+    });
     setBusy(false);
-    setSent(true);
+    if (r.ok) setSent(true);
+    else setFailed(true);
   };
 
   if (sent)
@@ -49,6 +59,11 @@ export default function SimpleForm({ fields, cta, kind, success }: { fields: F[]
           )}
         </label>
       ))}
+      {failed && (
+        <p className="text-sm text-[#f3a6a0] sm:col-span-2" role="alert">
+          Couldn&apos;t send just now. Please try again or call <a href={SITE.phoneHref} className="underline">{SITE.phone}</a>.
+        </p>
+      )}
       <div className="flex justify-end sm:col-span-2">
         <button disabled={busy} className="bg-gold flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-ink disabled:opacity-50">
           {busy ? "Sending…" : cta} <Icon name="arrow" className="h-4 w-4" />

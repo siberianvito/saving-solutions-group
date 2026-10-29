@@ -118,6 +118,7 @@ export default function QuoteApp() {
   const [resume, setResume] = useState<State | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [sendError, setSendError] = useState(false);
   const [result, setResult] = useState<{ simulated: boolean } | null>(null);
   const hydrated = useRef(false);
   const topRef = useRef<HTMLDivElement>(null);
@@ -211,7 +212,7 @@ export default function QuoteApp() {
       coverages: s.coverages,
       contact: s.contact,
       business: s.path === "commercial" ? s.business : undefined,
-      property: s.address ? { address: s.address, verified: s.property.status === "verified", data: s.property.data } : undefined,
+      property: s.address ? { address: s.address, verified: s.property.status === "verified", data: s.property.data, parcel: s.property.folio } : undefined,
       answers: s.answers,
       current: s.current,
       documents: s.docs,
@@ -219,8 +220,13 @@ export default function QuoteApp() {
       source: { landing: typeof document !== "undefined" ? document.referrer : "", utm },
       createdAt: new Date().toISOString(),
     };
+    setSendError(false);
     const r = await submitIntake(rec);
     setBusy(false);
+    if (!r.ok) {
+      setSendError(true); // keep the draft so nothing is lost
+      return;
+    }
     setResult({ simulated: r.simulated });
     setS((p) => ({ ...p, submitted: true }));
     try { localStorage.removeItem(KEY); } catch {}
@@ -493,6 +499,13 @@ export default function QuoteApp() {
                 <span>I agree that Saving Solutions Group may contact me by phone, text message, and email about my request, including reminders about incomplete applications. Message and data rates may apply. Reply STOP to opt out. Consent is not a condition of purchase.</span>
               </label>
             </>
+          )}
+
+          {sendError && id === "review" && (
+            <div className="mt-6 rounded-2xl border border-[#f3a6a0]/40 bg-[#f3a6a0]/[0.07] px-5 py-4 text-sm" role="alert">
+              <p className="text-ivory">We couldn&apos;t send your request just now. Your answers are saved.</p>
+              <p className="mt-1 text-mist">Try again, or call <a href={SITE.phoneHref} className="text-gold-light underline">{SITE.phone}</a> and mention reference <span className="font-mono text-gold-light">{s.ref}</span>.</p>
+            </div>
           )}
 
           {/* Nav buttons */}
