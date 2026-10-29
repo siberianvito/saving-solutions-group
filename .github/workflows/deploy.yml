@@ -29,7 +29,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      # Google Fonts download occasionally flakes on the runner — retry once
+      - run: npm run build || (sleep 20 && npm run build)
       - run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
