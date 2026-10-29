@@ -21,7 +21,7 @@ jobs:
       # Custom domain (savingsolutionsinsurance.com) serves from the root — no base path
       SITE_URL: https://savingsolutionsinsurance.com
       # GoHighLevel inbound-webhook workflow trigger — website quote + form leads
-      NEXT_PUBLIC_INTAKE_WEBHOOK: https://services.leadconnectorhq.com/hooks/Wl6LsyVGEfoktjHed3ZN/webhook-trigger/5eb6d985-fe9d-4da9-abfa-b70351c14866
+      NEXT_PUBLIC_INTAKE_WEBHOOK: https://services.leadconnectorhq.com/hooks/Wl6LsyVGEfoktjHed3ZN/webhook-trigger/78012bc4-f9ab-417d-93d7-77def6614768
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
