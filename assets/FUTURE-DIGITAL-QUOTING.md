@@ -1,4 +1,16 @@
-# Future version: Digital Quoting (parked 2026-10-29)
+# Digital Quoting: status
+
+**2026-10-29 (update):** /quote runs QuoteApp again, and the property lookup is LIVE with real
+Miami-Dade Property Appraiser records + FEMA flood zones (`src/lib/property.ts`,
+`src/components/PropertyLookup.tsx`). No server or API key: both services allow browser calls.
+The GHL form lives only on /contact.
+
+⚠️ Quote submissions need `NEXT_PUBLIC_INTAKE_WEBHOOK` (a GHL inbound-webhook URL) set in the
+deploy workflow, or they show the preview message and go nowhere.
+
+---
+
+# (Earlier) Future version: Digital Quoting (parked 2026-10-29)
 
 VITO's call: v1 captures leads with the GoHighLevel form (`src/components/GHLForm.tsx`,
 skinned by `assets/ghl-form-custom.css`). The full digital-quoting app is kept, working and
@@ -19,7 +31,7 @@ In `src/app/quote/page.tsx`, render `<QuoteApp />` (client component, no Suspens
 the GHL form column. Wire `NEXT_PUBLIC_INTAKE_WEBHOOK` to a GHL inbound webhook so records still land in the CRM.
 
 ## Needed before launch
-- Licensed property-data provider (replace `mockLookup`)
+- ~~Licensed property-data provider~~: done for Miami-Dade (public PA records). Broward / Palm Beach still to add
 - Server-side file storage for uploads (currently metadata only)
 - Real SMS continuation (GHL conversations) + reminder workflows (1h / 24h / 3d)
 - Carrier / market-access integration (First Connect, direct carriers), e-signature, COI automation

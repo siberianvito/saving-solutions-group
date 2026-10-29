@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import { asset } from "@/lib/asset";
 import { SITE } from "@/lib/data";
-import { mockLookup } from "@/lib/property";
+import PropertyLookup from "@/components/PropertyLookup";
+import { lookupFolio } from "@/lib/property";
 import { COVERAGES, INDUSTRIES, LIFE_BASICS, PATHS, QUESTIONS, WATER_QS, type Path, type Q } from "@/lib/questions";
 import { newRef, submitIntake, type IntakeRecord } from "@/lib/intake";
 
@@ -25,7 +26,7 @@ type State = {
   contact: { name: string; phone: string; email: string; preferred: "call" | "text" | "email" };
   business: { name: string; industry: string; years: string };
   address: string;
-  property: { status: "none" | "found" | "verified" | "manual"; data?: Record<string, string> };
+  property: { status: "none" | "found" | "verified" | "manual"; data?: Record<string, string>; folio?: string };
   answers: Record<string, Record<string, string>>;
   current: { carrier: string; premium: string; effectiveDate: string };
   docs: { name: string; size: number; type: string }[];
@@ -117,7 +118,6 @@ export default function QuoteApp() {
   const [resume, setResume] = useState<State | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [lookup, setLookup] = useState(false);
   const [result, setResult] = useState<{ simulated: boolean } | null>(null);
   const hydrated = useRef(false);
   const topRef = useRef<HTMLDivElement>(null);
@@ -145,6 +145,12 @@ export default function QuoteApp() {
       setS(next);
     } else if (params.get("address")) {
       setS({ ...blank(), address: params.get("address") ?? "" });
+      const folio = params.get("folio");
+      if (folio) {
+        lookupFolio(folio)
+          .then((rec) => rec && setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio } })))
+          .catch(() => {});
+      }
     } else if (stored && !stored.submitted && (stored.step > 0 || stored.path)) {
       setResume(stored);
     }
@@ -186,16 +192,6 @@ export default function QuoteApp() {
     if (id === "review") return s.consent;
     return true;
   })();
-
-  const runLookup = () => {
-    if (!s.address.trim()) return;
-    setLookup(true);
-    window.setTimeout(() => {
-      const rec = mockLookup(s.address);
-      setS((p) => ({ ...p, address: rec.address, property: { status: "found", data: Object.fromEntries(rec.fields) } }));
-      setLookup(false);
-    }, 1500);
-  };
 
   const onFiles = (files: FileList | null) => {
     if (!files) return;
@@ -389,34 +385,32 @@ export default function QuoteApp() {
             <>
               <h2 className="font-display text-4xl font-light md:text-5xl">Where is the property?</h2>
               <p className="mt-3 text-ivory/65">We&apos;ll look up the building so you only confirm, not retype.</p>
-              <div className="mt-8 flex flex-col gap-2 sm:flex-row">
-                <input className="field flex-1" autoComplete="street-address" placeholder="Street, city, ZIP" value={s.address} onChange={(e) => setS((p) => ({ ...p, address: e.target.value, property: { status: "none" } }))} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), runLookup())} />
-                <button type="button" onClick={runLookup} className="bg-gold rounded-[14px] px-6 py-3.5 text-sm font-semibold text-ink">{lookup ? "Looking up…" : "Find my property"}</button>
+              <div className="mt-8">
+                {s.property.status === "verified" && s.property.data ? (
+                  <div style={{ animation: "fadeUp .5s both" }}>
+                    <p className="flex items-center gap-2 text-sm text-gold-light"><Icon name="check" className="h-4 w-4" /> Verified from public records</p>
+                    <p className="mt-1 font-display text-2xl">{s.address}</p>
+                    <dl className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-3">
+                      {Object.entries(s.property.data).map(([k, v]) => (
+                        <div key={k} className="rounded-xl border border-gold/12 bg-ink/50 px-3.5 py-2.5"><dt className="hud !text-[0.55rem]">{k}</dt><dd className="mt-1 text-sm text-gold-light">{v}</dd></div>
+                      ))}
+                    </dl>
+                    <button type="button" onClick={() => set("property", { status: "none" })} className="mt-4 text-xs text-mist underline underline-offset-4">Different property</button>
+                  </div>
+                ) : (
+                  <PropertyLookup
+                    initial={s.address}
+                    compact
+                    onAddressChange={(a) => setS((p) => ({ ...p, address: a, property: p.property.status === "manual" ? p.property : { status: "none" } }))}
+                    onVerified={(rec) => setS((p) => ({ ...p, address: rec.address, property: { status: "verified", data: Object.fromEntries(rec.fields), folio: rec.folio } }))}
+                    onManual={() => set("property", { status: "manual" })}
+                  />
+                )}
               </div>
-              {lookup && <p className="mt-6 flex items-center gap-3 text-sm text-mist"><span className="h-2 w-2 animate-pulse-dot rounded-full bg-gold" /> Matching parcel and building records…</p>}
-              {(s.property.status === "found" || s.property.status === "verified") && s.property.data && (
-                <div className="mt-6" style={{ animation: "fadeUp .5s both" }}>
-                  <p className="text-sm text-mist">Is this your property?</p>
-                  <dl className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
-                    {Object.entries(s.property.data).map(([k, v]) => (
-                      <div key={k} className="rounded-xl border border-gold/12 bg-ink/50 px-3.5 py-2.5"><dt className="hud !text-[0.55rem]">{k}</dt><dd className="mt-1 text-sm text-gold-light">{v}</dd></div>
-                    ))}
-                  </dl>
-                  {s.property.status === "found" ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <button type="button" onClick={() => set("property", { ...s.property, status: "verified" })} className="bg-gold rounded-full px-5 py-2.5 text-xs font-semibold text-ink">Yes, that&apos;s correct</button>
-                      <button type="button" onClick={() => set("property", { status: "manual" })} className="rounded-full border border-gold/30 px-5 py-2.5 text-xs">Something&apos;s off, my advisor will fix it</button>
-                    </div>
-                  ) : (
-                    <p className="mt-4 flex items-center gap-2 text-sm text-gold-light"><Icon name="check" className="h-4 w-4" /> Verified. That&apos;s {Object.keys(s.property.data).length} answers you won&apos;t have to type.</p>
-                  )}
-                </div>
-              )}
-              {s.property.status === "none" && !lookup && (
+              {s.property.status === "none" && (
                 <button type="button" onClick={() => set("property", { status: "manual" })} className="mt-5 text-xs text-mist underline underline-offset-4">Skip, I&apos;ll confirm details with my advisor</button>
               )}
               {s.property.status === "manual" && <p className="mt-5 text-sm text-mist">No problem. Your advisor will confirm the building details with you.</p>}
-              <p className="hud mt-6 !normal-case !tracking-normal">Preview uses demo property data. Production connects to a licensed property-data provider.</p>
             </>
           )}
 

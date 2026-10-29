@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/Icon";
 import { asset } from "@/lib/asset";
 import { Reveal, SectionTag, SplitHeading } from "@/components/ui";
-import { mockLookup, type PropertyRecord } from "@/lib/property";
+import PropertyLookup from "@/components/PropertyLookup";
+import type { PropertyRecord } from "@/lib/property";
 
 /* ── Text-based intake: animated conversation ─────────────────── */
 const CHAT: { from: "ssg" | "you"; text: string }[] = [
@@ -87,87 +88,22 @@ function Phone() {
 
 /* ── Property intelligence demo ──────────────────────────────── */
 function PropertyDemo() {
-  const [addr, setAddr] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "found" | "confirmed">("idle");
-  const [rec, setRec] = useState<PropertyRecord | null>(null);
-  const [step, setStep] = useState(0);
-  const STEPS = ["Geocoding address", "Matching parcel record", "Reading building characteristics", "Checking flood zone"];
-
-  const run = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addr.trim()) return;
-    setState("loading");
-    setStep(0);
-    STEPS.forEach((_, i) => window.setTimeout(() => setStep(i + 1), 380 * (i + 1)));
-    window.setTimeout(() => {
-      setRec(mockLookup(addr));
-      setState("found");
-    }, 380 * (STEPS.length + 1));
-  };
-
+  const [verified, setVerified] = useState<PropertyRecord | null>(null);
   return (
     <div className="glass-deep gold-frame rounded-[28px] p-6 md:p-8">
       <div className="flex items-center justify-between">
         <p className="eyebrow">Try it · Property intelligence</p>
-        <span className="hud">Demo</span>
+        <span className="hud flex items-center gap-1.5"><span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-gold" /> Live · Miami-Dade</span>
       </div>
-      <form onSubmit={run} className="mt-5 flex flex-col gap-2 sm:flex-row">
-        <label className="relative flex-1">
-          <span className="sr-only">Property address</span>
-          <Icon name="pin" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold" />
-          <input value={addr} onChange={(e) => { setAddr(e.target.value); setState("idle"); }} placeholder="Type any Florida address" className="field !pl-11" />
-        </label>
-        <button className="bg-gold rounded-[14px] px-6 py-3.5 text-sm font-semibold text-ink" type="submit">Look it up</button>
-      </form>
-
-      <div className="mt-6 min-h-[300px]">
-        {state === "idle" && (
-          <div className="grid h-[300px] place-items-center rounded-2xl border border-dashed border-gold/15 text-center">
-            <div>
-              <Icon name="search" className="mx-auto h-10 w-10 text-gold/50" stroke={1} />
-              <p className="mt-4 max-w-xs text-sm text-mist">Enter an address and watch how much we can fill in before you type another word.</p>
-            </div>
-          </div>
-        )}
-        {state === "loading" && (
-          <ul className="space-y-3 pt-4">
-            {STEPS.map((s, i) => (
-              <li key={s} className={`flex items-center gap-3 text-sm transition-opacity ${i < step ? "opacity-100" : "opacity-30"}`}>
-                <span className={`grid h-6 w-6 place-items-center rounded-full border ${i < step ? "border-gold bg-gold text-ink" : "border-gold/30"}`}>
-                  {i < step ? <Icon name="check" className="h-3.5 w-3.5" stroke={2.2} /> : <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />}
-                </span>
-                {s}
-              </li>
-            ))}
-          </ul>
-        )}
-        {(state === "found" || state === "confirmed") && rec && (
-          <div style={{ animation: "fadeUp .6s both" }}>
-            <p className="text-sm text-mist">Is this your property?</p>
-            <p className="mt-1 font-display text-2xl text-ivory">{rec.address}</p>
-            <dl className="mt-4 grid grid-cols-2 gap-2">
-              {rec.fields.map(([k, v], i) => (
-                <div key={k} className="rounded-xl border border-gold/12 bg-ink/50 px-3.5 py-2.5" style={{ animation: `fadeUp .5s ${i * 0.06}s both` }}>
-                  <dt className="hud !text-[0.55rem]">{k}</dt>
-                  <dd className="mt-1 text-sm font-medium text-gold-light">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            {state === "found" ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={() => setState("confirmed")} className="bg-gold rounded-full px-5 py-2.5 text-xs font-semibold text-ink">Yes, that&apos;s it</button>
-                <button type="button" onClick={() => setState("idle")} className="rounded-full border border-gold/30 px-5 py-2.5 text-xs text-ivory/80">Not quite</button>
-              </div>
-            ) : (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gold/10 px-4 py-3 ring-1 ring-gold/30">
-                <span className="flex items-center gap-2 text-sm text-gold-light"><Icon name="check" className="h-4 w-4" /> 7 answers you&apos;ll never have to type.</span>
-                <Link href={`/quote?address=${encodeURIComponent(rec.address)}`} className="text-sm font-medium text-ivory underline decoration-gold underline-offset-4">Continue my quote →</Link>
-              </div>
-            )}
-            <p className="hud mt-4 !normal-case !tracking-normal">Demo data for illustration. Live quotes use licensed property-data sources.</p>
-          </div>
-        )}
+      <div className="mt-5">
+        <PropertyLookup onVerified={setVerified} />
       </div>
+      {verified && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-gold/10 px-4 py-3 ring-1 ring-gold/30" style={{ animation: "fadeUp .5s both" }}>
+          <span className="text-sm text-gold-light">Want a quote on this {verified.type.toLowerCase()}?</span>
+          <Link href={`/quote?address=${encodeURIComponent(verified.address)}&folio=${verified.folio}`} className="text-sm font-medium text-ivory underline decoration-gold underline-offset-4">Continue my quote →</Link>
+        </div>
+      )}
     </div>
   );
 }
