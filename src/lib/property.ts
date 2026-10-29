@@ -341,7 +341,7 @@ async function recordPalmBeach(id: string): Promise<PropertyRecord | null> {
     ["Property type", type],
     ["Year built", year ? String(year) : "Not on record"],
   ];
-  const community = String(a.SUBDIV_NAME ?? "").replace(/\s+(COND(O|OMINIUM)?\s+DECL|DECL|PL\s*B|PB|ORB|FILED)\b.*$/i, "").trim();
+  const community = String(a.SUBDIV_NAME ?? "").replace(/\s+(COND(O|OMINIUM)?\s+DECL|DECL|PL\s*B|PB|ORB|FILED)\b.*$/i, "").replace(/\s+(IN|OF|AT)$/i, "").trim();
   if (community) fields.push(["Community", titleCase(community)]);
   if (money(posNum(a.TOTAL_MARKET))) fields.push(["Market value", money(posNum(a.TOTAL_MARKET))!]);
   if (money(posNum(a.ASSESSED_VAL))) fields.push(["Assessed value", money(posNum(a.ASSESSED_VAL))!]);
