@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
 import { SERVICE, SITE } from "@/lib/data";
-import { newRef } from "@/lib/intake";
+import { newRef, postLead, splitName } from "@/lib/intake";
 
 type Field = { id: string; label: string; type?: "text" | "textarea" | "date" | "select"; options?: string[]; full?: boolean; placeholder?: string };
 
@@ -54,6 +54,37 @@ export default function ServiceDesk() {
   }, []);
 
   const svc = SERVICE.find((s) => s.id === sel)!;
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // Service requests go to the same GHL webhook, flagged as service (not a new quote)
+  const sendRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setFailed(false);
+    const ticket = newRef().replace("SSG", "SVC");
+    const contact = vals.contact ?? "";
+    const isEmail = contact.includes("@");
+    const labels = Object.fromEntries((EXTRA[sel] ?? []).map((f) => [f.id, f.label]));
+    const details = Object.entries(vals)
+      .filter(([k, v]) => v && k !== "insured" && k !== "contact")
+      .map(([k, v]) => `${labels[k] ?? k}: ${v}`);
+    const r = await postLead({
+      ...splitName(vals.insured ?? ""),
+      full_name: vals.insured ?? "",
+      phone: isEmail ? "" : contact,
+      email: isEmail ? contact : "",
+      source: "Website Client Center · savingsolutionsinsurance.com",
+      form: "service-request",
+      request_type: svc.label,
+      quote_ref: ticket,
+      lead_summary: [`🧾 CLIENT SERVICE REQUEST · ${ticket}`, `Request: ${svc.label}`, `Insured: ${vals.insured ?? ""}`, `Contact: ${contact}`, ...details].join("\n"),
+      submitted_at: new Date().toISOString(),
+    });
+    setBusy(false);
+    if (r.ok) setDone(ticket);
+    else setFailed(true);
+  };
   const v = (k: string) => vals[k] ?? "";
   const on = (k: string, x: string) => setVals((p) => ({ ...p, [k]: x }));
 
@@ -87,7 +118,7 @@ export default function ServiceDesk() {
             </div>
           ) : (
             <form
-              onSubmit={(e) => { e.preventDefault(); setDone(newRef().replace("SSG", "SVC")); }}
+              onSubmit={sendRequest}
             >
               <div className="flex items-center gap-3">
                 <Icon name={svc.icon} className="h-6 w-6 text-gold" />
@@ -113,9 +144,10 @@ export default function ServiceDesk() {
                   </label>
                 ))}
               </div>
+              {failed && <p className="mt-6 text-sm text-[#f3a6a0]" role="alert">Couldn&apos;t send just now. Please try again or call <a href={SITE.phoneHref} className="underline">{SITE.phone}</a>.</p>}
               <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/5 pt-6">
                 <a href={`${SITE.sms}?&body=${encodeURIComponent(sel === "coi" ? "I need a COI for " : `${svc.label}: `)}`} className="flex items-center gap-2 text-sm text-gold-light"><Icon name="chat" className="h-4 w-4" /> Rather text it?</a>
-                <button type="submit" className="bg-gold flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-ink">Send request <Icon name="arrow" className="h-4 w-4" /></button>
+                <button type="submit" disabled={busy} className="bg-gold flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-ink disabled:opacity-50">{busy ? "Sending…" : "Send request"} <Icon name="arrow" className="h-4 w-4" /></button>
               </div>
             </form>
           )}
